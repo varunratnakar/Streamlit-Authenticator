@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import jwt
 from jwt import DecodeError, InvalidSignatureError
 import streamlit as st
-import extra_streamlit_components as stx
+from streamlit_cookies_controller import CookieController
 
 from ..utilities import Helpers
 
@@ -50,7 +50,7 @@ class CookieModel:
             self.cookie_name            =   cookie_name
             self.cookie_key             =   cookie_key
             self.cookie_expiry_days     =   cookie_expiry_days
-        self.cookie_manager         =   stx.CookieManager()
+        self.cookie_controller         =   CookieController()
         self.token                  =   None
         self.exp_date               =   None
     def delete_cookie(self):
@@ -58,7 +58,7 @@ class CookieModel:
         Deletes the re-authentication cookie.
         """
         try:
-            self.cookie_manager.delete(self.cookie_name)
+            self.cookie_controller.remove(self.cookie_name)
         except KeyError as e:
             print(e)
     def get_cookie(self) -> str:
@@ -88,8 +88,8 @@ class CookieModel:
         if self.cookie_expiry_days != 0:
             self.exp_date = self._set_exp_date()
             token = self._token_encode()
-            self.cookie_manager.set(self.cookie_name, token,
-                                    expires_at=datetime.now() + \
+            self.cookie_controller.set(self.cookie_name, token,
+                                    expires=datetime.now() + \
                                     timedelta(days=self.cookie_expiry_days))
     def _set_exp_date(self) -> str:
         """
